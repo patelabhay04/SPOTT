@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 import {
   Building,
@@ -12,10 +13,8 @@ import {
 
 import {
   SignInButton,
-  SignedIn,
-  SignedOut,
-  useAuth,
   UserButton,
+  useAuth,
 } from "@clerk/nextjs";
 
 import { BarLoader } from "react-spinners";
@@ -25,16 +24,12 @@ import { useOnboarding } from "@/hooks/use-onboarding";
 
 import OnboardingModal from "./onboarding-modal";
 import SearchLocationBar from "./search-location-bar";
+import UpgradeModal from "./upgrade-modal";
 
 import { Button } from "@/components/ui/button";
-
-import Image from "next/image";
-
-import UpgradeModal from "./upgrade-modal";
 import { Badge } from "./ui/badge";
 
 export default function Header() {
-
   const [showUpgradeModal, setShowUpgradeModal] =
     useState(false);
 
@@ -46,19 +41,17 @@ export default function Header() {
     handleOnboardingSkip,
   } = useOnboarding();
 
-  const { has } = useAuth();
+  const { has, userId } = useAuth();
 
   const hasPro = has?.({ plan: "pro" });
 
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 bg-background/80 backdrop-blur-xl z-20 border-b">
-
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
           {/* Logo */}
           <Link href="/" className="flex items-center">
-
             <Image
               src="/spott.png"
               alt="Spott logo"
@@ -74,7 +67,6 @@ export default function Header() {
                 Pro
               </Badge>
             )}
-
           </Link>
 
           {/* Search */}
@@ -108,77 +100,67 @@ export default function Header() {
               </Link>
             </Button>
 
-            {/* SIGNED IN */}
-            <SignedIn>
+            {userId ? (
+              <>
+                {/* Create Event */}
+                <Button
+                  size="sm"
+                  asChild
+                  className="flex gap-2 mr-4"
+                >
+                  <Link href="/create-event">
+                    <Plus className="w-4 h-4" />
 
-              {/* Create Event */}
-              <Button
-                size="sm"
-                asChild
-                className="flex gap-2 mr-4"
-              >
-                <Link href="/create-event">
-                  <Plus className="w-4 h-4" />
+                    <span className="hidden sm:inline">
+                      Create Event
+                    </span>
+                  </Link>
+                </Button>
 
-                  <span className="hidden sm:inline">
-                    Create Event
-                  </span>
-                </Link>
-              </Button>
+                {/* Profile */}
+                <UserButton
+                  afterSignOutUrl="/"
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-10 h-10",
+                    },
+                  }}
+                >
+                  <UserButton.MenuItems>
+                    <UserButton.Link
+                      label="My Tickets"
+                      labelIcon={
+                        <Ticket size={16} />
+                      }
+                      href="/my-tickets"
+                    />
 
-              {/* Profile */}
-              <UserButton
-                afterSignOutUrl="/"
-                appearance={{
-                  elements: {
-                    avatarBox: "w-10 h-10",
-                  },
-                }}
-              >
-                <UserButton.MenuItems>
+                    <UserButton.Link
+                      label="My Events"
+                      labelIcon={
+                        <Building size={16} />
+                      }
+                      href="/my-events"
+                    />
 
-                  <UserButton.Link
-                    label="My Tickets"
-                    labelIcon={
-                      <Ticket size={16} />
-                    }
-                    href="/my-tickets"
-                  />
+                    <UserButton.Action
+                      label="manageAccount"
+                    />
 
-                  <UserButton.Link
-                    label="My Events"
-                    labelIcon={
-                      <Building size={16} />
-                    }
-                    href="/my-events"
-                  />
-
-                  <UserButton.Action
-                    label="manageAccount"
-                  />
-
-                  <UserButton.Action
-                    label="signOut"
-                  />
-
-                </UserButton.MenuItems>
-              </UserButton>
-
-            </SignedIn>
-
-            {/* SIGNED OUT */}
-            <SignedOut>
-
+                    <UserButton.Action
+                      label="signOut"
+                    />
+                  </UserButton.MenuItems>
+                </UserButton>
+              </>
+            ) : (
               <SignInButton mode="modal">
                 <Button size="sm">
                   Sign In
                 </Button>
               </SignInButton>
-
-            </SignedOut>
-
+            )}
           </div>
-
         </div>
 
         {/* Mobile Search */}
@@ -194,17 +176,14 @@ export default function Header() {
             />
           </div>
         )}
-
       </nav>
 
-      {/* Onboarding */}
       <OnboardingModal
         isOpen={showOnboarding}
         onClose={handleOnboardingSkip}
         onComplete={handleOnboardingComplete}
       />
 
-      {/* Upgrade Modal */}
       <UpgradeModal
         isOpen={showUpgradeModal}
         onClose={() =>
